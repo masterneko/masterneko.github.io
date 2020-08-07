@@ -1,6 +1,8 @@
 body {
 font-family: Geneva, Arial, Helvetica, sans-serif; 
+margin: 0px;
 }
+
 .top {
  color: white;
  background: #25383C;
