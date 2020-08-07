@@ -12,6 +12,10 @@ body {
  margin-top: 0;
 }
 
+.content {
+ position: absolute;
+}
+
 .profile {
   width: 100px;
   height: 100px;
