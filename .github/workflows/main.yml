@@ -11,9 +11,10 @@ jobs:
         with:
           input_dir: blog-pages
           output_dir: blog
-          theme: style.css
+          extend_default_theme: false
+          template: blog-template.html
       - uses: EndBug/add-and-commit@v9
         with:
-          add: blog
+          add: blog/*.html
           message: 'BOT: Automatically converting Markdown to HTML'
 
