@@ -1,29 +1,130 @@
-body {
-  font-family: Ubuntu, Geneva, Arial, Helvetica, sans-serif; 
-  margin: 0;
-  padding: 0;
+html, body
+{
+    font-family: Poppins, Helvetica, Ubuntu, Geneva, Arial, sans-serif; 
+    font-size: 12pt;
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+    min-width: 100%;
+    scroll-behavior: smooth;
+    scrollbar-color: #474747 #333333;
 }
 
 * {
-  margin: 0;
-  padding: 0;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.top {
- color: white;
- background: #25383C;
- width: 100%;
- margin-top: 0;
- padding-top: 10px;
+button
+{
+    outline: none;
+    border: none;
+    padding: 15px;
+    cursor: pointer;
 }
 
-.content {
- margin: 10px;
- padding-top: 30px;
+a
+{
+    color: inherit;
 }
 
-.profile {
-  width: 100px;
-  height: 100px;
-  border-radius: 50%;
+#slide1 {
+    color: white;
+    background: #008080;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    height: 100vh;
+}
+
+#profile-img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+}
+
+#user-card
+{
+    display: flex;
+    flex-direction: column;
+    align-content: flex-start;
+    gap: 10px;
+    padding: 20px;
+    min-width: 0;
+}
+
+#see-more-btn
+{
+    background: #ffffff;
+    text-transform: uppercase;
+    transition: ease-in 0.2s;
+}
+
+#see-more-btn:hover
+{
+    color: #ffffff;
+    box-shadow: inset 100px 0 0 0 #333333;
+}
+
+@media(max-width: 700px)
+{
+    #slide1
+    {
+        flex-direction: column;
+    }
+
+    #user-card
+    {
+        align-items: center;
+        text-align: center;
+    }
+}
+
+#slide2 {
+    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 50px;
+}
+
+#project-list
+{
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+    max-width: 600px;
+}
+
+.project-card
+{
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 40px;
+    background: #ffffff;
+    border: 1px solid #D3D3D3;
+}
+
+.project-card button
+{
+    background: inherit;
+    border: 3px solid #000;
+}
+
+#footer
+{
+    background: #333333;
+    color: #ffffff;
+    width: 100%;
+    padding: 20px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
 }

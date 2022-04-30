@@ -1,0 +1,15 @@
+name: Generate blog
+
+on: [push]
+jobs:
+  generate:
+    name: MD to HTML
+    runs-on: ubuntu-18.04
+    steps:
+      - uses: actions/checkout@v3
+      - uses: BaileyJM02/markdown-to-pdf@v1
+        with:
+          input_dir: blog-pages
+          output_dir: blog
+          theme: style.css
+

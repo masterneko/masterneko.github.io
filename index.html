@@ -1,28 +1,49 @@
 <!DOCTYPE html>
 
 <head>
-<link rel="stylesheet" type="text/css" href="style.css">
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&display=swap" rel="stylesheet"> 
 </head>
+
 <body>
-  <div class="top">
-  <center>
-  <p><img class="profile" width="200" src="https://avatars3.githubusercontent.com/u/53895123?s=460&u=efd43e225ff0c7d938a9e7b462406f21cda12a2e&v=4" alt="profile"/></p>
-  <h2><strong>Hi, I'm caelwithcats<br/></strong></h2>
-  <p><strong>&nbsp;</strong></p>
-  <p>I am a computer hobbyist. I enjoy programming and love cat, Ack. Find out what projects I've done bellow</p>
-  <p>&nbsp;</p>
-  </center>
-  </div>
-  <div class="content">
-    <center><h2>Stuff I've made</h2></center>
-    <center>
-      <a href="https://github.com/caelwithcats/cross-lib"><img src="https://gh-card.dev/repos/caelwithcats/cross-lib.svg"></img></a>
-      <br>
-      <b>I'm working on an OS!</b>
-      <br>
-      <a href="https://github.com/ackOS-project/ackOS"><img src="https://gh-card.dev/repos/ackOS-project/ackOS.svg"</img></a>
-    <center>
-  </div>
+    <div id="slide1">
+        <img id="profile-img"
+                src="https://avatars3.githubusercontent.com/u/53895123?s=460&u=efd43e225ff0c7d938a9e7b462406f21cda12a2e&v=4"
+                alt="profile" />
+        <div id="user-card">
+            <h1 id="welcome-text">Hello World!</h2>
+
+            <p>I am a C++ developer who loves programming and my pet cat.</p>
+
+            <a href="#slide2"><button id="see-more-btn">See more</button></a>
+        </div>
+    </div>
+
+
+    <div id="slide2">
+        <h2>I'm working on an OS!</h2>
+
+        <div id="project-list">
+            <div class="project-card">
+                <h3>ackOS</h3>
+                <p>An open source hobby operating system I'm writing for fun.</p>
+
+                <a href="https://github.com/ackOS-project/ackOS"><button>Visit</button></a>
+            </div>
+        </div>
+
+        <h2>Blog</h2>
+    </div>
+
+    <div id="footer">
+        <p>Copyright © 2022</p>
+    </div>
+
+    <script src="script.js" ></script>
+
 </body>
 
 </html>
