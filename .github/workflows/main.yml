@@ -17,6 +17,6 @@ jobs:
           mv _docs blog
       - uses: EndBug/add-and-commit@v9
         with:
-          add: blog/*.html
+          add: blog/*
           message: 'BOT: Automatically converting Markdown to HTML'
 

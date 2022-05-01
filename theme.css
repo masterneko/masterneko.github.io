@@ -1,0 +1,28 @@
+
+@media(prefers-color-scheme: light)
+{
+    :root
+    {
+        --primary-colour: #008080;
+        --secondary-colour: #333333;
+        --primary-border-colour: #000;
+        --secondary-border-colour: #D3D3D3;
+        --primary-text-colour: #000;
+        --secondary-text-colour: #ffffff;
+        --bg-colour: #ffffff;
+    }
+}
+
+@media(prefers-color-scheme: dark)
+{
+    :root
+    {
+        --primary-colour: #008080;
+        --secondary-colour: #333333;
+        --primary-border-colour: #9c9a9a;
+        --secondary-border-colour: #636262;
+        --primary-text-colour: #ffffff;
+        --secondary-text-colour: #ffffff;
+        --bg-colour: #1f1b24;
+    }
+}
