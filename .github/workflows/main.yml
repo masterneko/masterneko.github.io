@@ -7,12 +7,14 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - uses: actions/checkout@v3
-      - uses: BaileyJM02/markdown-to-pdf@v1
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v3.1.1
         with:
-          input_dir: blog-pages
-          output_dir: blog
-          extend_default_theme: false
-          template: blog-template.html
+          node-version: 16
+      - run: npm install -g markdown-folder-to-html
+      - run: |
+          markdown-folder-to-html docs
+          mv _docs blog
       - uses: EndBug/add-and-commit@v9
         with:
           add: blog/*.html
