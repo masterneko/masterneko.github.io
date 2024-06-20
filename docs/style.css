@@ -18,6 +18,16 @@ html, body
     box-sizing: border-box;
 }
 
+ul {
+    margin-left: 20px;
+}
+
+code
+{
+    overflow-wrap: break-word;
+    text-wrap: wrap;
+}
+
 a
 {
     text-decoration: none;
@@ -30,7 +40,7 @@ a::after
     content: '';
     background: rgba(0, 128, 128, 0.2);
     position: absolute;
-    left: 20%;
+    left: 15%;
     bottom: -15%;
     width: calc(100% - 10%);
     height: calc(100% - 30%);
