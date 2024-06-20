@@ -24,5 +24,16 @@
         --primary-text-colour: #ffffff;
         --secondary-text-colour: #ffffff;
         --bg-colour: #1f1b24;
+
+        --syntax-string-colour: #FAB795E6;
+        --syntax-keyword-colour: #B877DBE6;
+        --syntax-preprocessor-colour: #B877DBE6;
+        --syntax-comment: #BBBBBB4D;
+        --syntax-type-colour: #FAC29AE6;
+        --syntax-number-colour: #F09483E6;
+        --syntax-punctuation-colour: #BBBBBB;
+        --syntax-tag-colour: #E95678E6;
+        --syntax-function-colour: #25B0BCE6;
+        --syntax-variable-colour: #E95678E6;
     }
 }

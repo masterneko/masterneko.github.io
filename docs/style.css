@@ -73,3 +73,67 @@ a:hover::after
 {
     display: none;
 }
+
+.pln
+{
+    color: var(--syntax-variable-colour) !important;
+}
+
+@media screen
+{ 
+    .str
+    {
+        color: var(--syntax-string-colour) !important;
+    }
+    
+    .kwd
+    {
+        color: var(--syntax-keyword-colour) !important;
+    }
+    
+    .com
+    {
+        color: var(--syntax-comment) !important;
+        font-style: italic;
+    }
+    
+    .typ
+    {
+        color: var(--syntax-type-colour) !important;
+    }
+    
+    .lit
+    {
+        color: var(--syntax-number-colour) !important;
+    }
+    
+    .clo,  .opn,  .pun
+    {
+        color: var(--syntax-punctuation-colour) !important;
+    }
+    
+    .tag
+    {
+        color: var(--syntax-tag-colour) !important;
+    }
+    
+    .atn
+    {
+        color: var(--syntax-type-colour) !important;
+    }
+    
+    .atv
+    {
+        color: var(--syntax-string-colour) !important;
+    }
+    
+    .dec, .var
+    {
+        color: var(--syntax-variable-colour) !important;
+    }
+    
+    .fun
+    {
+        color: var(--syntax-function-colour) !important;
+    }
+}
