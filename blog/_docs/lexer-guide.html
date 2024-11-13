@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="/theme.css">
+    <link rel="stylesheet" type="text/css" href="/blog/style.css">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans&display=swap" rel="stylesheet">
+
+    <title>Blog</title>
+</head>
+<body>
+    <a href="/" id="go-back">Go Back</a>
+
+    <div id="content">
+        <h1 id="lexical-analysis">Lexical analysis <a class="heading-anchor-permalink" href="#lexical-analysis">#</a></h1>
+<p>Imagine understanding a sentence by reading the individual characters alone. It would be quite difficult wouldn’t it?</p>
+<p>Lexical analysis or tokenising is the process of grouping characters into words or so called ‘tokens’ using a predetermined grammar. It is used extensively in compilers, programming languages and natural language processing to transform a meaningless sequence of characters into a sequence of tokens which the computer can work with.</p>
+<p>This article will attempt to explain the workings of lexical analysis and how to write a lexer of your own.</p>
+<h2 id="example">EXAMPLE <a class="heading-anchor-permalink" href="#example">#</a></h2>
+<p>Starting with a pratical example, the “Hello, World!” programme in C would typically look like this before tokenising:</p>
+<pre><code>#include &lt;stdio.h&gt;
+
+int main()
+{
+    puts(&quot;Hello, World!&quot;);
+}
+</code></pre>
+<p>However it may look like this after being tokenised by a compiler:</p>
+<p>[<code>#</code>] [<code>include</code>] [<code></code>] [<code>&lt;</code>] [<code>stdio.h</code>] [<code>&gt;</code>] [<code>\n</code>]</p>
+<p>[<code>\n</code>]</p>
+<p>[<code>int</code>] [<code></code>] [<code>main</code>] [<code>(</code>] [<code>)</code>] [<code>\n</code>] [<code>{</code>] [<code>\n</code>]</p>
+<p>[<code></code>] [<code></code>] [<code></code>] [<code></code>] [<code>puts</code>] [<code>(</code>] [<code>&quot;Hello, World!&quot;</code>] [<code>)</code>] [<code>;</code>] [<code>\n</code>]</p>
+<p>[<code>}</code>]</p>
+<p>Do you notice that the characters have been chunked together. The programme has been converted from a sequence of characters to sequence of words or tokens (like a sentence).</p>
+<p>It is also in this stage that a few very basic syntax errors are caught. For example if you missed the closing <code>&quot;</code> in the string literal <code>&quot;Hello, World!&quot;</code> then the compiler would likely give an error.</p>
+<p>NOTE:
+To avoid confusion whitespace and newline characters in the example above have been retained. However in reality many compilers will remove these tokens as they have little value in most programming languages.</p>
+<h2 id="grammar">Grammar <a class="heading-anchor-permalink" href="#grammar">#</a></h2>
+<p>Just like English has grammar so do programming languages. Grammar defines the rules for tokenising a language.</p>
+<p>There can be many different types of tokens. This is an outline of the five main types:</p>
+<ul>
+<li>Punctuation (<code>{</code>, <code>}</code>, <code>;</code>, <code>&lt;</code> , <code>&gt;</code>, <code>&gt;=</code>, <code>+</code>, <code>-</code>, <code>.</code>, <code>,</code>, etc)</li>
+<li>Whitespace (<code>\t</code>, <code>\n</code>, <code>' '</code>)
+<ul>
+<li>in some programming languages whitespace has semantic meaning (for example, Python)</li>
+</ul>
+</li>
+<li>Identifiers &amp; keywords (<code>main</code>, <code>x</code>, <code>my_var</code>, <code>int</code>, <code>return</code>, <code>😎</code>?)
+<ul>
+<li>these are typically case sensitive, start with a letter followed by any combination of alphanumeric characters but may also support unicode characters and emojis using leftover characters (more on this later)</li>
+</ul>
+</li>
+<li>Numerical tokens (<code>42</code>, <code>3.14</code>, <code>0xF00D</code>)</li>
+<li>String literals (<code>&quot;Hello!&quot;</code>, <code>&quot;This is \&quot;a string\&quot;&quot;</code>)</li>
+</ul>
+<h2 id="writing-a-lexer">Writing a lexer <a class="heading-anchor-permalink" href="#writing-a-lexer">#</a></h2>
+<p>A lexer is the algorithm which preforms the tokenisation step, breaking source code into tokens. It can be quite challenging to write a good lexer. There are many edge cases and these need to be handled effectively in order to produce the correct output.</p>
+<h3 id="the-scanner">The scanner <a class="heading-anchor-permalink" href="#the-scanner">#</a></h3>
+<p>When performing lexical analysis it is important to keep track of the current position in the source code and to be able to match against certain patterns. A scanner provides this convenience and will assist greatly you during parsing. It operates on a buffer or source file and will typically have the ability to:</p>
+<ul>
+<li>Advance by <code>n</code> characters</li>
+<li>Peek at characters without advancing</li>
+<li>Skip a sequence of characters
+<ul>
+<li>first checks whether a given string (for example “cat”) matches the next following characters</li>
+<li>if it does the scanner advances its position in the buffer (by 3 characters in the case of “cat”)</li>
+</ul>
+</li>
+<li>Skip a character if it is present in a character set
+<ul>
+<li>for example a character set of “abcdefghijklmnopqrstuvwxyz” would match a single alphabetical letter</li>
+</ul>
+</li>
+<li>Skip a character if it is NOT present in a character set</li>
+<li>Take a substring up to a certain point</li>
+</ul>
+<p>These basic functionalities can be used in conjunction to parse tokens. For example this code could be used to parse numerical tokens:</p>
+<pre><code class="language-c">bool parse_number(Scanner&amp; scanner)
+{
+    // skip over prefix and handle accordingly
+    if (scanner.skip_sequence(&quot;0x&quot;))
+    {
+        size_t n = 0;
+
+        // keeps matching and advancing until skip_char reached a char not in the list
+        while (scanner.skip_char(&quot;0123456789abcdefABCDEF&quot;)) n++;
+
+        // if it didn't match at least once it should be rejected
+        if (n &lt; 1)
+        {
+            return false;
+        }
+    }
+    else
+    {
+        size_t n = 0;
+
+        while (scanner.skip_char(&quot;0123456789&quot;)) n++;
+
+        if (n &lt; 1) return false;
+
+        if (scanner.skip_char('.'))
+        {
+            n = 0;
+
+            while (scanner.skip_char(&quot;0123456789&quot;)) n++;
+
+            if (n &lt; 1) return false;
+        }
+    }
+
+    return true; /* the token was accepted */
+}
+</code></pre>
+<p>There could also be a parsing function for string literals or punctuation tokens, etc. It all builds on the same idea. Skip over the characters you are interested in and return whether or not the token was accepted. While it is possible to <a href="/res/simple_lexer.cpp">write a lexer in other ways</a>, using a scanner is one of the most easiest and least error-prone approaches.</p>
+<p>I maintain a scanner implementation at <a href="https://github.com/masterneko/scanner">https://github.com/masterneko/scanner</a></p>
+<h3 id="token-declarations">Token declarations <a class="heading-anchor-permalink" href="#token-declarations">#</a></h3>
+<p>Eventually you will implement quite a few token parsing functions. But in a source file with many different combinations of tokens how will a lexer know which function to call?</p>
+<pre><code class="language-c">bool parse_comment(Scanner&amp; scanner);
+bool parse_number(Scanner&amp; scanner);
+bool parse_string(Scanner&amp; scanner);
+bool parse_more_than_or_equal(Scanner&amp; scanner);
+bool parse_more_than(Scanner&amp; scanner);
+bool parse_plus(Scanner&amp; scanner);
+bool parse_minus(Scanner&amp; scanner);
+bool parse_times(Scanner&amp; scanner);
+bool parse_divide(Scanner&amp; scanner);
+bool parse_space(Scanner&amp; scanner);
+</code></pre>
+<p>A lexer would typically use a list of token declarations. In this list each token would be assigned a type ID and an associated parsing function. While it is possible to define a separate enum and an array of function pointers, a cool C/C++ trick is <a href="https://en.wikipedia.org/wiki/X_macro">X macros</a>. These allow you to define token declarations in a tabular format, all in one place.</p>
+<pre><code class="language-c++">#define TOKENS(X) \
+      /* Type */       /* Parsing func */        \
+    X(Comment,         parse_comment)            \
+    X(Number,          parse_number)             \
+    X(String,          parse_string)             \
+    X(MoreThanOrEqual, parse_more_than_or_equal) \
+    X(MoreThan,        parse_more_than)          \
+    X(Plus,            parse_plus)               \
+    X(Minus,           parse_minus)              \
+    X(Times,           parse_times)              \
+    X(Divide,          parse_divide)             \
+    X(Space,           parse_space)
+</code></pre>
+<p>Additionally you should also define some recycling functions. These will be used in the case that the lexer found leftover characters - an unknown token. The lexer will then attempt to repurpose these unknown characters by trying to find a recycler which accepts these characters. In our language any leftover characters will be turned into identifiers. This also has the side effect of allowing emojis which is cool 😎.</p>
+<pre><code class="language-c++">bool recycle_identifier(std::string_view leftovers)
+{
+    return true; /* accept regardless of the leftovers' contents */
+}
+
+#define RECYCLERS(X) \
+      /* Type */       /* Recycling func */ \
+    X(Identifier,     recycle_identifier)
+</code></pre>
+<p>You will also need a Token class, this will store all information related to each individual token including its type and location within the source file as well as any text it contains:</p>
+<pre><code class="language-c++">class Token
+{
+public:
+    #define TOKENS_enum(TYPE_, PARSING_FUNC_) TYPE_,
+    #define RECYCLERS_enum(TYPE_, RECYCLE_FUNC_) TYPE_,
+    enum Type
+    {
+        TOKENS(TOKENS_enum)
+        RECYCLERS(RECYCLERS_enum)
+        Error
+    };
+
+    static std::string_view type_to_string(Type type)
+    {
+        #define TOKENS_strings(TYPE_, PARSING_FUNC_) #TYPE_,
+        #define RECYCLERS_strings(TYPE_, RECYCLE_FUNC_) #TYPE_,
+
+        const char* strings[] = {
+            TOKENS(TOKENS_strings)
+            RECYCLERS(RECYCLERS_strings)
+        };
+
+        return (size_t)type &lt; (sizeof(strings) / sizeof(strings[0])) ? strings[(size_t)type] : &quot;Error&quot;;
+    }
+
+    Type type;
+    std::string_view text;
+    size_t index;
+    size_t line, col;
+};
+</code></pre>
+<p>You may have noticed that there is a token of type <code>Token::Error</code> and this is what the lexer creates when there is a partially digested or a non-recyclable token.</p>
+<h3 id="the-lexer">The lexer <a class="heading-anchor-permalink" href="#the-lexer">#</a></h3>
+<p>You are 75% there. The last step is the lexer itself which will use the token declarations as defined earlier to convert the source file into tokens. This can however be one of the most difficult parts to master.</p>
+<h4 id="worked-example%3A"><em>Worked example:</em> <a class="heading-anchor-permalink" href="#worked-example%3A">#</a></h4>
+<p>Take the following source code. The scanner will initially start off at the beginning where the arrow is pointing:</p>
+<pre><code>2 + num &gt;= 5
+^
+</code></pre>
+<p>The lexer should check what the kind of token is at this position. So it does a search <code>parse_comment()</code>: no, <code>parse_number()</code>: Yes - it found a match. The lexer forms a token containing the text it matched along with the location within the source file (location includes index, line and column number). It adds this to a list and moves on.</p>
+<pre><code>2 + num &gt;= 5
+ ^
+</code></pre>
+<p>Token list:</p>
+<pre><code>Number(text: &quot;2&quot;, index: 0, line: 1, col: 1)
+</code></pre>
+<p>From here the next character in the sequence is a space character. <code>parse_comment()</code>: no, <code>parse_number()</code>: no, <code>parse_string()</code>: no. Eventually it finds at the bottom of the token declarations is <code>parse_space()</code>: Yes. The lexer adds the space token to the list and moves on.</p>
+<pre><code>2 + num &gt;= 5
+  ^
+</code></pre>
+<p>Token list:</p>
+<pre><code>Number(text: &quot;2&quot;, index: 0, line: 1, col: 1)
+Space(text: &quot; &quot;, index: 1, line: 1, col: 2)
+</code></pre>
+<p>Note: that the lexer is not concerned about converting number tokens into integers or floats. This can be done later. The main purpose of a lexer is to group sequences of characters into categories. Type conversion is inherently context driven (eg. <code>float x = 42</code>, here <code>42</code> would depend on knownledge that <code>x</code> is a <code>float</code> to be converted properly). Deriving context and relationships between tokens is the role of a syntatical analyser not lexical analysis.</p>
+<p>The next character is parsed using <code>parse_plus</code> and a <code>Plus</code> token is produced and the scanner moves on.</p>
+<pre><code>2 + num &gt;= 5
+   ^
+</code></pre>
+<p>Token list:</p>
+<pre><code>Number(text: &quot;2&quot;, index: 0, line: 1, col: 1)
+Space(text: &quot; &quot;, index: 1, line: 1, col: 2)
+Plus(text: &quot;+&quot;, index 2, line: 1, col: 3)
+</code></pre>
+<p>The next character is parsed by <code>parse_space</code> and another <code>Space</code> token is produced. The scanner is moved forward.</p>
+<pre><code>2 + num &gt;= 5
+    ^
+</code></pre>
+<p>Token list:</p>
+<pre><code>Number(text: &quot;2&quot;, index: 0, line: 1, col: 1)
+Space(text: &quot; &quot;, index: 1, line: 1, col: 2)
+Plus(text: &quot;+&quot;, index 2, line: 1, col: 3)
+Space(text: &quot; &quot;, index: 3, line: 1, col: 4)
+</code></pre>
+<p>The character ‘n’ is next. Does <code>parse_comment()</code> work? no, how about <code>parse_number()</code>? no, <code>parse_string()</code>? no, <code>parse_more_than_or_equal</code>: no, <code>parse_more_than</code>: no, <code>parse_plus</code>: no, <code>parse_minus</code>: no, <code>parse_times</code>: no, <code>parse_divide</code>: no, <code>parse_space</code>: no. Oh it seems like this character has been rejected by all the parsing functions. We’ll come back to this character later meanwhile we’ll see if the next character can be parsed.</p>
+<pre><code>2 + num &gt;= 5
+    *^
+</code></pre>
+<p>‘u’ also got rejected. We’ll mark it with another asterisk and come back to this character once we find a token that can be parsed.</p>
+<pre><code>2 + num &gt;= 5
+    **^
+</code></pre>
+<p>‘m’ doesn’t seem to be a match either. Again we mark this character for later and move on to the next character.</p>
+<pre><code>2 + num &gt;= 5
+    ***^
+</code></pre>
+<p>This time we are in luck. <code>' '</code> is recognised by <code>parse_space</code>. Now the lexer can recycle those old rejected leftover characters into a token.</p>
+<p>The one and only recycler <code>recycle_identifier</code> is called: <code>recycle_identifier(&quot;num&quot;)</code> and returns true indicating its been accepted so a new identifier token is created out of these leftover characters.</p>
+<p>Both the recycled <code>Identifier</code> and <code>Space</code> tokens are added to the token list.</p>
+<p>Token list:</p>
+<pre><code>Number(text: &quot;2&quot;, index: 0, line: 1, col: 1)
+Space(text: &quot; &quot;, index: 1, line: 1, col: 2)
+Plus(text: &quot;+&quot;, index 2, line: 1, col: 3)
+Space(text: &quot; &quot;, index: 3, line: 1, col: 4)
+Identifier(text: &quot;num&quot;, index: 4, line: 1, col: 5)
+Space(text: &quot; &quot;, index: 7, line: 1, col: 8)
+</code></pre>
+<p>The scanner proceeds and now the current character is ‘&gt;’</p>
+<pre><code>2 + num &gt;= 5
+        ^
+</code></pre>
+<p>Now there is actually two possible parsing functions the lexer could use: <code>parse_more_than</code> (’<code>&gt;</code>’) or <code>parse_more_than_or_equal</code> (’<code>&gt;=</code>’) since ‘&gt;’ is a substring of ‘&gt;=’. Logically <code>parse_more_than_or_equal</code> would be the sensible solution, however without understanding the concept of greediness the lexer could interpret this as separate <code>&gt;</code> and <code>=</code> tokens. This is why lexers are greedy algorithms meaning they try to consume as many characters as possible.</p>
+<p>In the end the lexer finds that <code>parse_more_than_or_equal</code> yields the most characters matched. So a <code>MoreThanOrEqual</code> token is created. The scanner as usual moves forward.</p>
+<pre><code>2 + num &gt;= 5
+          ^
+</code></pre>
+<p>Token list:</p>
+<pre><code>Number(text: &quot;2&quot;, index: 0, line: 1, col: 1)
+Space(text: &quot; &quot;, index: 1, line: 1, col: 2)
+Plus(text: &quot;+&quot;, index 2, line: 1, col: 3)
+Space(text: &quot; &quot;, index: 3, line: 1, col: 4)
+Identifier(text: &quot;num&quot;, index: 4, line: 1, col: 5)
+Space(text: &quot; &quot;, index: 7, line: 1, col: 8)
+MoreThanOrEqual(text: &quot;&gt;=&quot;, index: 8, line: 1, col: 9)
+</code></pre>
+<p>Before reaching the end of file (EOF) the lexer finds two more tokens. These are <code>Space</code> and <code>Number</code>.</p>
+<pre><code>2 + num &gt;= 5
+            ^ EOF
+</code></pre>
+<p>So the final token list is:</p>
+<pre><code>Number(text: &quot;2&quot;, index: 0, line: 1, col: 1)
+Space(text: &quot; &quot;, index: 1, line: 1, col: 2)
+Plus(text: &quot;+&quot;, index 2, line: 1, col: 3)
+Space(text: &quot; &quot;, index: 3, line: 1, col: 4)
+Identifier(text: &quot;num&quot;, index: 4, line: 1, col: 5)
+Space(text: &quot; &quot;, index: 7, line: 1, col: 8)
+MoreThanOrEqual(text: &quot;&gt;=&quot;, index: 8, line: 1, col: 9)
+Space(text: &quot; &quot;, index: 10, line: 1, col: 11)
+Number(text: &quot;5&quot;, index: 11, line: 1, col: 12)
+</code></pre>
+<p>That is the basic algorithm of a lexer. If you were concatenate the text from each token, it would be the same as the starting source:</p>
+<pre><code class="language-c">  &quot;2&quot;, &quot; &quot;, &quot;+&quot;, &quot; &quot;, &quot;num&quot;, &quot; &quot;, &quot;&gt;=&quot;, &quot; &quot;, &quot;5&quot;
+
+= &quot;2 + num &gt;= 5&quot;
+</code></pre>
+<h3 id="lexer-code">Lexer code <a class="heading-anchor-permalink" href="#lexer-code">#</a></h3>
+<p>A main part of the lexer alogrithm is determining the greediest token. As seen in the example above, greediness is an important aspect to lexical analysis. It can mean the difference between the code being interpreted as separate <code>&gt;</code> and <code>=</code> tokens or as a single <code>&gt;=</code> token. This function will try out each parser function to determine which token consumes the highest number of characters. It will store the type of token it is in <code>best_type</code> and return the end position, the point at which the token ends.</p>
+<pre><code class="language-c++">#define TOKENS_funcs(TYPE_, PARSING_FUNC_) PARSING_FUNC_,
+static bool (*parser_funcs[]) (Scanner&amp; scanner) = {
+    TOKENS(TOKENS_funcs)
+};
+static size_t parser_funcs_n = sizeof(parser_funcs) / sizeof(parser_funcs[0]);
+
+Scanner::iterator find_greediest_token(Scanner&amp; scanner, Token::Type&amp; best_type)
+{
+    const Scanner::iterator best_start = scanner.current();
+    Scanner::iterator best_end = best_start;
+
+    for (size_t i = 0; i &lt; parser_funcs_n; i++)
+    {
+        bool was_accepted = parser_funcs[i](scanner);
+
+        if (was_accepted &amp;&amp; scanner.current() &gt; best_end) /* if it is accepted and the greediest so far */
+        {
+            // record as the best match
+            best_type = (Token::Type)i;
+            best_end = scanner.current();
+        }
+        else if (!was_accepted &amp;&amp; scanner.current() != best_start) /* else if it was rejected halfway through parsing */
+        {
+            // create an Error token
+            best_type = Token::Type::Error;
+            best_end = scanner.current();
+        }
+
+        // reset to the beginning
+        scanner = best_start;
+    }
+
+    return best_end;
+}
+</code></pre>
+<p>We will need to create tokens at some point, so here is a utility function to do that:</p>
+<pre><code class="language-c++">Token create_token(Scanner::iterator start_it, Token::Type type)
+{
+    Token tok;
+
+    tok.type = type;
+    // take the text present between start_it and the current character
+    tok.text = start_it.slice();
+
+    Scanner::iterator::location loc = start_it.get_location();
+
+    tok.index = loc.index;
+    tok.line = loc.line;
+    tok.col = loc.column;
+
+    return tok;
+}
+</code></pre>
+<p>The <code>find_greediest_token</code> function will not always match a token, so it is important we collect the characters that weren’t consumed so they can be recycled. This function is responsible for adding a token to the list and if requred will recycle leftover characters.</p>
+<pre><code class="language-c++">void parse_token(Scanner&amp; scanner, std::list&lt;Token&gt;&amp; tokens)
+{
+    const Scanner::iterator leftover_start = scanner.current();
+
+    while (scanner)
+    {
+        Token::Type token_type = Token::Error;
+        const Scanner::iterator token_start = scanner.current();
+        const Scanner::iterator token_end = find_greediest_token(scanner, token_type);
+
+        if (token_start == token_end) /* if no character was consumed */
+        {
+            // advance by one character (this will become a leftover character)
+            scanner++;
+        }
+        else
+        {
+            if (leftover_start != token_start) /* if there are leftovers */
+            {
+                // recycle the token into a usable type
+                tokens.push_back(recycle_token(leftover_start));
+            }
+
+            // skip forward to the token's end
+            scanner = token_end;
+
+            // add the parsed token to the list
+            tokens.push_back(create_token(token_start, token_type));
+
+            break;
+        }
+    }
+}
+</code></pre>
+<p>The <code>recyle_token</code> function is quite simple, it will call each recylcler function to check whether the token can be recycled. If not it will create an error token.</p>
+<pre><code class="language-c++">Token recycle_token(Scanner::iterator start_it)
+{
+    #define RECYCLERS_funcs(TYPE_, RECYCLE_FUNC_) RECYCLE_FUNC_,
+    static bool (*recycler_funcs[]) (std::string_view text) = {
+        RECYCLERS(RECYCLERS_funcs)
+    };
+    static size_t recycler_funcs_n = sizeof(recycler_funcs) / sizeof(recycler_funcs[0]);
+
+    Token tok = create_token(start_it, Token::Type::Error);
+
+    for (size_t i = 0; i &lt; recycler_funcs_n; i++)
+    {
+        if (recycler_funcs[i](tok.text))
+        {
+            tok.type = (Token::Type)(parser_funcs_n + i); /* recylers located directly after parsers */
+
+            break;
+        }
+    }
+
+    return tok;
+}
+</code></pre>
+<h3 id="tokenise_text">tokenise_text <a class="heading-anchor-permalink" href="#tokenise_text">#</a></h3>
+<p>This function puts everything together in order to produce a list of tokens.</p>
+<pre><code class="language-c++">std::list&lt;Token&gt; tokenise_text(std::string_view text)
+{
+    Scanner scanner(text);
+    std::list&lt;Token&gt; tokens;
+
+    while (scanner)
+    {
+        parse_token(scanner, tokens);
+    }
+
+    return tokens;
+}
+</code></pre>
+<h2 id="conclusion">Conclusion <a class="heading-anchor-permalink" href="#conclusion">#</a></h2>
+<p>Hopefully you now know how lexical analysis works and how to write an effective lexer. The code shown in this guide is available in full <a href="/res/lexer.cpp">here</a>.</p>
+
+    </div>
+
+    <script>
+        (function() {
+            let code_tags = document.querySelectorAll('code[class^="language-"]');
+
+            for (let tag of code_tags)
+            {
+                tag.className = tag.className.replace("language-", "prettyprint lang-").replace("c++", "cpp");
+            }
+        })();
+      </script>
+      <script src="https://cdn.rawgit.com/google/code-prettify/master/loader/run_prettify.js"></script>
+</body>
+</html>
