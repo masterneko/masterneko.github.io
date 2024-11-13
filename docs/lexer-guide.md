@@ -205,7 +205,7 @@ Take the following source code. The scanner will initially start off at the begi
 ^
 ```
 
-The lexer should check what the kind of token is at this position. So it does a search `parse_comment()`: no, `parse_number()`: Yes - it found a match. The lexer forms a token containing the text it matched along with the location within the source file (location includes index, line and column number). It adds this a list and moves on.
+The lexer should check what the kind of token is at this position. So it does a search `parse_comment()`: no, `parse_number()`: Yes - it found a match. The lexer forms a token containing the text it matched along with the location within the source file (location includes index, line and column number). It adds this to a list and moves on.
 
 ```
 2 + num >= 5
@@ -230,7 +230,7 @@ Number(text: "2", index: 0, line: 1, col: 1)
 Space(text: " ", index: 1, line: 1, col: 2)
 ```
 
-It's important to note that the lexer is not concerned about converting number tokens into integers or floats. This can be done later. The main purpose of a lexer is to group sequences of characters into categories. Type conversion is inherently context driven (eg. `float x = 42`, here `42` would depend on knownledge that `x` is a `float` to be converted properly). Deriving context and relationships between tokens is the role of a syntatical analyser not lexical analysis.
+Note: that the lexer is not concerned about converting number tokens into integers or floats. This can be done later. The main purpose of a lexer is to group sequences of characters into categories. Type conversion is inherently context driven (eg. `float x = 42`, here `42` would depend on knownledge that `x` is a `float` to be converted properly). Deriving context and relationships between tokens is the role of a syntatical analyser not lexical analysis.
 
 The next character is parsed using `parse_plus` and a `Plus` token is produced and the scanner moves on.
 
@@ -305,7 +305,7 @@ The scanner proceeds and now the current character is '>'
         ^
 ```
 
-Now there is actually two possible parsing functions the lexer could use: `parse_more_than` ('`>`') or `parse_more_than_or_equal` ('`>=`') since '>' is a substring of '>='. Logically `parse_more_than_or_equal` would be the sensible solution, however without understanding the concept greediness the lexer could intrepret this as separate `>` and `=` tokens. This is why lexers are greedy algorithms meaning they try to consume as many characters as possible.
+Now there is actually two possible parsing functions the lexer could use: `parse_more_than` ('`>`') or `parse_more_than_or_equal` ('`>=`') since '>' is a substring of '>='. Logically `parse_more_than_or_equal` would be the sensible solution, however without understanding the concept of greediness the lexer could interpret this as separate `>` and `=` tokens. This is why lexers are greedy algorithms meaning they try to consume as many characters as possible.
 
 In the end the lexer finds that `parse_more_than_or_equal` yields the most characters matched. So a `MoreThanOrEqual` token is created. The scanner as usual moves forward.
 
@@ -345,7 +345,7 @@ Space(text: " ", index: 10, line: 1, col: 11)
 Number(text: "5", index: 11, line: 1, col: 12)
 ```
 
-That is the basic algorithm of a lexer. If you were concatenate the text from each token, it would be the same starting source:
+That is the basic algorithm of a lexer. If you were concatenate the text from each token, it would be the same as the starting source:
 
 ```c
   "2", " ", "+", " ", "num", " ", ">=", " ", "5"
