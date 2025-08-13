@@ -196,7 +196,7 @@ public:
 <pre><code>2 + num &gt;= 5
 ^
 </code></pre>
-<p>The lexer should check what the kind of token is at this position. So it does a search <code>parse_comment()</code>: no, <code>parse_number()</code>: Yes - it found a match. The lexer forms a token containing the text it matched along with the location within the source file (location includes index, line and column number). It adds this a list and moves on.</p>
+<p>The lexer should check what the kind of token is at this position. So it does a search <code>parse_comment()</code>: no, <code>parse_number()</code>: Yes - it found a match. The lexer forms a token containing the text it matched along with the location within the source file (location includes index, line and column number). It adds this to a list and moves on.</p>
 <pre><code>2 + num &gt;= 5
  ^
 </code></pre>
@@ -211,7 +211,7 @@ public:
 <pre><code>Number(text: &quot;2&quot;, index: 0, line: 1, col: 1)
 Space(text: &quot; &quot;, index: 1, line: 1, col: 2)
 </code></pre>
-<p>It’s important to note that the lexer is not concerned about converting number tokens into integers or floats. This can be done later. The main purpose of a lexer is to group sequences of characters into categories. Type conversion is inherently context driven (eg. <code>float x = 42</code>, here <code>42</code> would depend on knownledge that <code>x</code> is a <code>float</code> to be converted properly). Deriving context and relationships between tokens is the role of a syntatical analyser not lexical analysis.</p>
+<p>Note: that the lexer is not concerned about converting number tokens into integers or floats. This can be done later. The main purpose of a lexer is to group sequences of characters into categories. Type conversion is inherently context driven (eg. <code>float x = 42</code>, here <code>42</code> would depend on knownledge that <code>x</code> is a <code>float</code> to be converted properly). Deriving context and relationships between tokens is the role of a syntatical analyser not lexical analysis.</p>
 <p>The next character is parsed using <code>parse_plus</code> and a <code>Plus</code> token is produced and the scanner moves on.</p>
 <pre><code>2 + num &gt;= 5
    ^
@@ -258,7 +258,7 @@ Space(text: &quot; &quot;, index: 7, line: 1, col: 8)
 <pre><code>2 + num &gt;= 5
         ^
 </code></pre>
-<p>Now there is actually two possible parsing functions the lexer could use: <code>parse_more_than</code> (’<code>&gt;</code>’) or <code>parse_more_than_or_equal</code> (’<code>&gt;=</code>’) since ‘&gt;’ is a substring of ‘&gt;=’. Logically <code>parse_more_than_or_equal</code> would be the sensible solution, however without understanding the concept greediness the lexer could intrepret this as separate <code>&gt;</code> and <code>=</code> tokens. This is why lexers are greedy algorithms meaning they try to consume as many characters as possible.</p>
+<p>Now there is actually two possible parsing functions the lexer could use: <code>parse_more_than</code> (’<code>&gt;</code>’) or <code>parse_more_than_or_equal</code> (’<code>&gt;=</code>’) since ‘&gt;’ is a substring of ‘&gt;=’. Logically <code>parse_more_than_or_equal</code> would be the sensible solution, however without understanding the concept of greediness the lexer could interpret this as separate <code>&gt;</code> and <code>=</code> tokens. This is why lexers are greedy algorithms meaning they try to consume as many characters as possible.</p>
 <p>In the end the lexer finds that <code>parse_more_than_or_equal</code> yields the most characters matched. So a <code>MoreThanOrEqual</code> token is created. The scanner as usual moves forward.</p>
 <pre><code>2 + num &gt;= 5
           ^
@@ -287,7 +287,7 @@ MoreThanOrEqual(text: &quot;&gt;=&quot;, index: 8, line: 1, col: 9)
 Space(text: &quot; &quot;, index: 10, line: 1, col: 11)
 Number(text: &quot;5&quot;, index: 11, line: 1, col: 12)
 </code></pre>
-<p>That is the basic algorithm of a lexer. If you were concatenate the text from each token, it would be the same starting source:</p>
+<p>That is the basic algorithm of a lexer. If you were concatenate the text from each token, it would be the same as the starting source:</p>
 <pre><code class="language-c">  &quot;2&quot;, &quot; &quot;, &quot;+&quot;, &quot; &quot;, &quot;num&quot;, &quot; &quot;, &quot;&gt;=&quot;, &quot; &quot;, &quot;5&quot;
 
 = &quot;2 + num &gt;= 5&quot;
