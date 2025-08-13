@@ -14,7 +14,7 @@ jobs:
       - run: npm install -g markdown-folder-to-html
       - run: |
           markdown-folder-to-html docs
-          mv _docs blog
+          mv -f _docs blog
       - uses: EndBug/add-and-commit@v9
         with:
           add: blog/*
